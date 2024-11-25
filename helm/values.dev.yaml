@@ -1,0 +1,75 @@
+# Default values for whitelist-ceria.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: stable
+  pullPolicy: IfNotPresent
+imagePullSecrets: gcr #Ubah Ini Untuk Merubah Pull Secret Baru
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: NodePort #Sesuaikan Ini ClusterIP/NodePort/Ingress/lainnya Disini Gunakan NodePort
+  port: 9192
+  targetPort: 9192 #Local Port Set
+  nodePort: 31320 #Intra Port Set
+
+env:
+  - name: "PHOENIX_DB_URL"
+    value: "http://172.18.98.54:8765"
+  - name: ELASTIC_APM_SERVICE_NAME
+    value: "whitelist_ceria"
+  - name: ELASTIC_APM_SERVER_URL
+    value: http://172.18.98.76:8200
+  - name: PQS_HOST
+    value: "http://hbdrm01.hq.bri.co.id:8765"
+  - name: AUTH
+    value: "SPNEGO"
+  - name: PRINCIPAL
+    value: "CERIA_SAC@HQ.BRI.CO.ID"
+  - name: KEYTAB
+    value: "go/bin/CERIA_SAC_UPPER.keytab"
+  - name: KRB5
+    value: "go/bin/krb5.conf"
+  - name: KRB5_CACHE
+    value: "/tmp/krb5cc_1000"
+  - name: AUTH_MODE
+    value: "kerberos1"
+  - name: HBASE_SCHEMA
+    value: "CERIA"
+  - name: MAIN_DB
+    value: "postgres"
+  - name: POSTGRES_DIALECTOR
+    value: "host=172.18.224.159 port=5432 user=bribrain password=P@ssw0rd2022 dbname=credit_scoring sslmode=disable"
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "500m"
+  limits:
+    memory: "1Gi"
+    cpu: "1"
+
+hostAliases:
+  - ip: "172.28.219.121"
+    hostnames:
+      - hbdrm01.hq.bri.co.id
+  - ip: "172.18.97.117"
+    hostnames:
+      - "sappdcadds01.hq.bri.co.id"
+  - ip: "172.18.97.118"
+    hostnames:
+      - "sappdcadds02.hq.bri.co.id"
+  - ip: "172.18.97.119"
+    hostnames:
+      - "sappdcadds03.hq.bri.co.id"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
