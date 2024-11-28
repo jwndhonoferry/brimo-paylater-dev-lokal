@@ -1,5 +1,5 @@
 def project = "concrete-plasma-244309"
-def appName = "whitelist-ceria"//samakan dengan repository git
+def appName = "ms-bribrain-brimo-paylater-whitelist"//samakan dengan repository git
 def namespace = "digital-bank"
 def namespaceuat = "digital-bank-uat"
 def proxyType = "http"
