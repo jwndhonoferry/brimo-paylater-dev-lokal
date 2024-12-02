@@ -27,20 +27,11 @@ func InitRouter() *gin.Engine {
 	router.Use(apmgin.Middleware(router))
 
 	//end point -> call from controller
-	router.GET("/api/v1.0/customer/inquiry/:accnum", CeriaData)
-	router.GET("/api/v1.1/customer/inquiry/feature/:accnum", CeriaFeatureData)
-	router.GET("/api/v1.0/customer/inquirybyemail/:email", CeriaDataByEmailV2)
-	router.GET("/api/v1.0/customer/inquirybyphone/:phone", CeriaDataByPhoneV2)
+	router.GET("/api/v1.0/customer/inquiry/:accnum", BrimoData)
+	// router.GET("/api/v1.1/customer/inquiry/feature/:accnum", CeriaFeatureData)
+	// router.GET("/api/v1.0/customer/inquirybyemail/:email", CeriaDataByEmailV2)
+	// router.GET("/api/v1.0/customer/inquirybyphone/:phone", CeriaDataByPhoneV2)
 	//router.GET("/api/v1.0/customer/inquirybyemail/:email", CeriaDataByEmail)
 	//router.GET("/api/v1.0/customer/inquirybyphone/:phone", CeriaDataByPhone)
-
-	//New, Credit Card
-	// router.GET("/api/v1.0/customer-cc/inquirybycifno/:cifno", CeriaCreditCardDataByCifno)
-	// router.GET("/api/v1.0/customer-cc/inquirybyacctno/:accnum", CeriaCreditCardDataByAcctNo)
-
-	//New, KUR
-	// router.GET("/api/v1.0/customer-kur/inquirybyacctno/:accnum", CeriaKURDataByAcctNo)
-	// router.GET("/api/v1.0/customer-kur/inquirybyidnumber/:idnumber", CeriaKURDataByIdNumber)
-
 	return router
 }
