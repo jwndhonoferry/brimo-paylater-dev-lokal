@@ -12,10 +12,10 @@ var PGDb *gormio.DB
 var err error
 
 func InitDb() {
-	Db, err = connectHBase()
-	if err != nil {
-		panic(err)
-	}
+	// Db, err = connectHBase()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	PGDb, err = connectPostgres()
 	if err != nil {
