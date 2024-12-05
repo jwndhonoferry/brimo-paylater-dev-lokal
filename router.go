@@ -35,14 +35,5 @@ func InitRouter() *gin.Engine {
 	// router.GET("/api/v1.0/customer/inquirybyphone/:phone", CeriaDataByPhoneV2)
 	//router.GET("/api/v1.0/customer/inquirybyemail/:email", CeriaDataByEmail)
 	//router.GET("/api/v1.0/customer/inquirybyphone/:phone", CeriaDataByPhone)
-
-	//New, Credit Card
-	// router.GET("/api/v1.0/customer-cc/inquirybycifno/:cifno", CeriaCreditCardDataByCifno)
-	// router.GET("/api/v1.0/customer-cc/inquirybyacctno/:accnum", CeriaCreditCardDataByAcctNo)
-
-	//New, KUR
-	// router.GET("/api/v1.0/customer-kur/inquirybyacctno/:accnum", CeriaKURDataByAcctNo)
-	// router.GET("/api/v1.0/customer-kur/inquirybyidnumber/:idnumber", CeriaKURDataByIdNumber)
-
 	return router
 }
