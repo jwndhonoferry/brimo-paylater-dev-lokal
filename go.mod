@@ -1,4 +1,4 @@
-module whitelist_ceria
+module ms-brimo-paylater
 
 go 1.17
 

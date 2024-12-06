@@ -1,8 +1,8 @@
 package main
 
 import (
+	"ms-brimo-paylater/utils"
 	"net/http"
-	"whitelist_ceria/utils"
 
 	"github.com/gin-gonic/gin"
 	"go.elastic.co/apm"
@@ -20,28 +20,16 @@ func BrimoData(c *gin.Context) {
 	accnum := c.Param("accnum")
 
 	//Append Acctno Request To Models
-<<<<<<< HEAD
 	BrimomDataRequestBody.AcctNo = accnum
 	if BrimomDataRequestBody.AcctNo == "" {
-=======
-	BrimoDataRequestBody.AcctNo = accnum
-	if BrimoDataRequestBody.AcctNo == "" {
->>>>>>> 26312a2e32b0152e2754a471b4e1d8b8a9fe0186
 		tx.Context.SetTag("desc", utils.MSG_ERROR_PARSING)
 		tx.Result = "false"
 		c.JSON(http.StatusOK, gin.H{"desc": utils.MSG_ERROR_PARSING})
 	} else {
-<<<<<<< HEAD
 		tx.Context.SetTag("acct_no", BrimomDataRequestBody.AcctNo)
 
 		//Call Data Response From Controller
 		message, err := GetBrimoDataPhoenixDB(BrimomDataRequestBody)
-=======
-		tx.Context.SetTag("acct_no", BrimoDataRequestBody.AcctNo)
-
-		//Call Data Response From Controller
-		message, err := GetCeriaDataPhoenixDB(BrimoDataRequestBody)
->>>>>>> 26312a2e32b0152e2754a471b4e1d8b8a9fe0186
 		if len(message) == 0 {
 			tx.Context.SetTag("desc", utils.MSG_ERROR_NO_DATA)
 			tx.Result = "false"
@@ -60,11 +48,7 @@ func BrimoData(c *gin.Context) {
 
 // Ceria Feature Data Hadler, Get Ceria Data, Using Method GET and URL Param
 // func CeriaFeatureData(c *gin.Context) {
-<<<<<<< HEAD
 // 	var BrimoDataRequestBody CeriaDataRequest
-=======
-// 	var CeriaDataRequestBody CeriaDataRequest
->>>>>>> 26312a2e32b0152e2754a471b4e1d8b8a9fe0186
 
 // 	tx := apm.DefaultTracer.StartTransaction("Get Feature Ceria by Acct No", "request")
 // 	defer tx.End()

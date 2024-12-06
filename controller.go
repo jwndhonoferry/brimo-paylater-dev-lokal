@@ -21,17 +21,11 @@ func GetBrimoDataPhoenixDB(req BrimoPaylaterDataByAcctNoRequest) ([]BrimoPaylate
 		db := getPostgresDb()
 		// err = db.Raw("SELECT * FROM brimo_pl_dev.brimo_paylater_whitelist_dev WHERE acctno = ? ", newAcctno).Scan(&BrimoDataResponseBody).Error
 		err = db.
-<<<<<<< HEAD
-			Table(`brimo_pl_dev.brimo_paylater_whitelist_dev`).
+			Table(`public.brimo_paylater_whitelist_dev`).
 			Select("*").
 			Where(`acctno = ?`, newAcctno).
+			Limit(1).
 			Scan(&BrimoDataResponseBody).Error
-=======
-			Table(`"public.brimo_paylater_whitelist"`).
-			Select("*").
-			Where(`"acctno" = ?`, newAcctno).
-			Scan(&ceriaDataResponseBody).Error
->>>>>>> 26312a2e32b0152e2754a471b4e1d8b8a9fe0186
 	}
 
 	if err != nil {
