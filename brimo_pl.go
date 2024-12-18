@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"ms-brimo-paylater/utils"
 	"net/http"
 
@@ -33,7 +35,9 @@ func BrimoData(c *gin.Context) {
 		if len(message) == 0 {
 			tx.Context.SetTag("desc", utils.MSG_ERROR_NO_DATA)
 			tx.Result = "false"
-			c.JSON(http.StatusOK, gin.H{"error": utils.MSG_ERROR_NO_DATA})
+			c.JSON(http.StatusOK, gin.H{"error": utils.MSG_ERROR_NO_DATA + "for : " + accnum})
+			fmt.Println("DATA NOT FOUND with ACCTNO ", accnum)
+			log.Println("DATA NOT FOUND with ACCTNO ", accnum)
 		} else if err == nil {
 			tx.Context.SetTag("desc", utils.MSG_SUCCESS_DATA_FOUND)
 			tx.Result = "true"

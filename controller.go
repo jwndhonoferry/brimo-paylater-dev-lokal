@@ -9,7 +9,6 @@ import (
 func GetBrimoDataPhoenixDB(req BrimoPaylaterDataByAcctNoRequest) ([]BrimoPaylaterDataResponse, error) {
 	var BrimoDataResponseBody []BrimoPaylaterDataResponse
 	newAcctno := strings.TrimLeft(req.AcctNo, "0")
-	// fmt.Println("MAIN DB NYAAAA", os.Getenv("MAIN_DB"))
 	if os.Getenv("MAIN_DB") == "hbase" {
 		db, _ := Connect()
 		err = db.
