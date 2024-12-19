@@ -25,7 +25,7 @@ pipeline {
 
     stage('Pushing Image') {
       environment {
-               registryCredential = 'dockerhub-credentials'
+               registryCredential = 'dockerhub-ferry'
            }
       steps{
         script {
@@ -36,7 +36,7 @@ pipeline {
       }
     }
 
-    stage('Deploying React.js container to Kubernetes') {
+    stage('Deploying Brimo Paylater container to Kubernetes') {
       steps {
         script {
           kubernetesDeploy(configs: "deployment-brimo-pl-local.yaml", "service-brimo-pl-local.yaml")
