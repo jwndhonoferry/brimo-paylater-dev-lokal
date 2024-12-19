@@ -6,8 +6,8 @@ metadata:
     name: brimo-pl-dev-lokal
 spec:
   containers:
-  - name: brimo-paylater-whitelist-dev-lokal
-    image: brimo-paylater-whitelist-dev-lokal:latest
+  - name: brimo-paylater-dev-lokal
+    image: ferryjwndhono/brimo-paylater-dev-lokal:1.0
     imagePullPolicy: Never
     env:
     - name: POSTGRES_DIALECTOR
