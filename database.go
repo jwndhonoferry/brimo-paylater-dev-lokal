@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	_ "github.com/apache/calcite-avatica-go/v5"
 	"github.com/jinzhu/gorm"
 	gormio "gorm.io/gorm"
@@ -24,5 +26,8 @@ func InitDb() {
 }
 
 func getPostgresDb() *gormio.DB {
+	if PGDb == nil {
+		log.Fatal("PostgreSQL connection is not initialized")
+	}
 	return PGDb
 }

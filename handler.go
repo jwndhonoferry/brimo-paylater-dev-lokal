@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	//"strconv"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,6 +17,21 @@ func GenerateResponse(c *gin.Context, req BrimoPaylaterDataResponse, resp_code s
 		"NoHandphone":        req.NoHandphone,
 		"LimitBrimoPaylater": req.LimitBrimoPaylater,
 		"RiskGradeScore":     req.RiskGradeScore,
+		"resp_code":          "200",
+	})
+}
+
+func GenerateCifnoResponse(c *gin.Context, req BrimoPaylaterDataCifnoResponse, resp_code string, resp_desc string) {
+	c.JSON(http.StatusOK, gin.H{
+		"AcctNo":             req.AcctNo,
+		"Cifno":              req.Cifno,
+		"NoOda":              req.NoOda,
+		"NamaNasabah":        req.NamaNasabah,
+		"UsernameBrimo":      req.UsernameBrimo,
+		"NoHandphone":        req.NoHandphone,
+		"LimitBrimoPaylater": req.LimitBrimoPaylater,
+		"RiskGradeScore":     req.RiskGradeScore,
+		"resp_code":          "200",
 	})
 }
 

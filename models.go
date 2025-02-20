@@ -19,6 +19,17 @@ type BrimoPaylaterDataResponse struct {
 	RiskGradeScore     uint64  `json:"risk_grade_score" gorm:"column:risk_grade_score"`
 }
 
+type BrimoPaylaterDataCifnoResponse struct {
+	AcctNo             string  `json:"acctno" gorm:"column:acctno"`
+	Cifno              string  `json:"cifno" gorm:"column:cifno"`
+	NoOda              string  `json:"no_oda" gorm:"column:no_oda"`
+	NamaNasabah        string  `json:"nama_nasabah" gorm:"column:nama_nasabah"`
+	UsernameBrimo      string  `json:"username_brimo" gorm:"column:username_brimo"`
+	NoHandphone        string  `json:"no_handphone" gorm:"column:no_handphone"`
+	LimitBrimoPaylater float64 `json:"limit_brimo_paylater" gorm:"column:limit_brimo_paylater"`
+	RiskGradeScore     uint64  `json:"risk_grade_score" gorm:"column:risk_grade_score"`
+}
+
 // CeriaDataRequest is request for ceria data service
 // type CeriaDataRequest struct {
 // 	AcctNo string `json:accnum`

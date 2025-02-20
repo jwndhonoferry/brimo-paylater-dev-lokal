@@ -30,7 +30,7 @@ func InitRouter() *gin.Engine {
 
 	//end point -> call from controller
 	router.GET("/api/v1.0/customer/inquiry/:accnum", BrimoData)
-	// router.GET("/api/v1.1/customer/inquiry/feature/:accnum", CeriaFeatureData)
+	router.GET("/api/v1.0/customer/inquiry/cifno/:cifno", BrimoDataByCifno)
 	// router.GET("/api/v1.0/customer/inquirybyemail/:email", CeriaDataByEmailV2)
 	// router.GET("/api/v1.0/customer/inquirybyphone/:phone", CeriaDataByPhoneV2)
 	//router.GET("/api/v1.0/customer/inquirybyemail/:email", CeriaDataByEmail)

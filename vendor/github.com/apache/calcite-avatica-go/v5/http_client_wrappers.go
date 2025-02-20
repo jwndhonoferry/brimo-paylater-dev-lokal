@@ -65,7 +65,7 @@ func WithKerberosAuth(cli *http.Client, username, realm, keyTab, krb5Conf, krb5C
 		if err != nil {
 			return nil, fmt.Errorf("error reading kerberos keytab: %w", err)
 		}
-		kc := client.NewWithKeytab(username, realm, kt, cfg, client.DisablePAFXFAST(true))
+		kc := client.NewWithKeytab(username, realm, kt, cfg)
 		err = kc.Login()
 		if err != nil {
 			return nil, fmt.Errorf("error performing kerberos login with keytab: %w", err)

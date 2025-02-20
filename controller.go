@@ -19,12 +19,16 @@ func GetBrimoDataPhoenixDB(req BrimoPaylaterDataByAcctNoRequest) ([]BrimoPaylate
 	} else {
 		db := getPostgresDb()
 		// err = db.Raw("SELECT * FROM brimo_pl_dev.brimo_paylater_whitelist_dev WHERE acctno = ? ", newAcctno).Scan(&BrimoDataResponseBody).Error
-		err = db.
-			Table(`public.brimo_paylater_whitelist_dev`).
-			Select("*").
-			Where(`acctno = ?`, newAcctno).
-			Limit(1).
-			Scan(&BrimoDataResponseBody).Error
+		if db == nil {
+			log.Println("PostgreSQL connection is not initialized")
+		} else {
+			err = db.
+				Table(`public.brimo_paylater_whitelist_dev`).
+				Select("*").
+				Where(`acctno = ?`, newAcctno).
+				Limit(1).
+				Scan(&BrimoDataResponseBody).Error
+		}
 	}
 
 	if err != nil {
@@ -32,7 +36,40 @@ func GetBrimoDataPhoenixDB(req BrimoPaylaterDataByAcctNoRequest) ([]BrimoPaylate
 		return nil, err
 	}
 
-	return BrimoDataResponseBody, nil
+	return BrimoDataResponseBody, err //nil
+}
+
+func GetBrimoDataCifno(req BrimoPaylaterDataByCifnoRequest) ([]BrimoPaylaterDataCifnoResponse, error) {
+	var BrimoDataResponseBody []BrimoPaylaterDataCifnoResponse
+	newCifno := strings.TrimLeft(req.Cifno, "0")
+	if os.Getenv("MAIN_DB") == "hbase" {
+		db, _ := Connect()
+		err = db.
+			Table("CUSTOMER_CERIA_CS").
+			Select("*").
+			Where("ACCOUNT_NUMBER = ?", newCifno).
+			Scan(&BrimoDataResponseBody).Error
+	} else {
+		db := getPostgresDb()
+		// err = db.Raw("SELECT * FROM brimo_pl_dev.brimo_paylater_whitelist_dev WHERE acctno = ? ", newAcctno).Scan(&BrimoDataResponseBody).Error
+		if db == nil {
+			log.Println("PostgreSQL connection is not initialized")
+		} else {
+			err = db.
+				Table(`public.brimo_paylater_whitelist_dev`).
+				Select("*").
+				Where(`cifno = ?`, newCifno).
+				Limit(1).
+				Scan(&BrimoDataResponseBody).Error
+		}
+	}
+
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	return BrimoDataResponseBody, err //nil
 }
 
 // func GetCeriaFeatureData(req BrimoPaylaterDataByAcctNoRequest) ([]BrimoPaylaterDataByAcctNoRequest, error) {

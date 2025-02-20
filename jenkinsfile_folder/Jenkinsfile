@@ -1,0 +1,333 @@
+def project = 'concrete-plasma-244309'
+def appName = 'ms-bribrain-brimo-paylater-whitelist'
+def namespace = 'bribrain'
+def proxyType = 'http'
+def proxyAddress = 'wlproxy.bri.co.id'
+def proxyPort = '1707'
+def IMAGE_TAG = ''
+def CODE_REPO = 'https://bitbucket.bri.co.id/scm/bribrain/ms-bribrain-brimo-paylater-whitelist.git'
+def CREDENTIALS_CODE_REPO = 'yoga-bitbucket-bri'
+def CONFIG_REPO = 'https://bitbucket.bri.co.id/scm/devops/ms-bribrain-brimo-paylater-whitelist-config.git'
+def CREDENTIALS_CONFIG_REPO = 'yoga-bitbucket-bri'
+def SONARTOOL_NAME = 'sonarscanner'
+def BUILDER = 'k8s-builder-prod'
+def VAULT_CREDENTIAL = "doris-vault-ddb"
+def VAULT_HOST = "https://vault.ddb.bri.co.id"
+def scannerKey = 'ddb:sample:development'
+def buildNumber = currentBuild.number
+
+
+pipeline {
+    agent {
+        kubernetes {
+            defaultContainer 'jnlp'
+            yaml '''
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          labels:
+            component: ci
+        spec:
+          tolerations:
+          - key: "jenkins"
+            operator: "Equal"
+            value: "agent"
+            effect: "NoSchedule"
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+               - preference:
+                   matchExpressions:
+                   - key: jenkins
+                     operator: In
+                     values:
+                     - agent
+                 weight: 100
+          hostAliases:
+          - ip: "172.24.61.19"
+            hostnames:
+            - "sast.bri.co.id"
+          - ip: "172.18.224.218"
+            hostnames:
+            - "devops-k8s-cluster-1-master-1"
+          - ip: "172.18.218.209"
+            hostnames:
+            - "k8s-loadbalancer-01"
+          - ip: "172.18.224.56"
+            hostnames:
+            - "k8s-load-balancer-master-01"
+          - ip: "172.18.219.115"
+            hostnames:
+            - "k8s-loadbalancer-01-sb"
+          - ip: "172.18.48.191"
+            hostnames:
+            - "vault.ddb.bri.co.id"
+          # Use service account that can deploy to all namespaces
+          serviceAccountName: cd-jenkins
+          containers:
+          - name: node
+            image: node:12.6.0
+            imagePullPolicy: IfNotPresent
+            command:
+            - cat
+            tty: true
+          - name: gcloud
+            image: google/cloud-sdk:263.0.0-alpine
+            imagePullPolicy: IfNotPresent
+            command:
+            - cat
+            tty: true
+          - name: helm
+            image: fathoniadi/helm:2.14.0
+            imagePullPolicy: IfNotPresent
+            command:
+            - cat
+            tty: true
+          - name: jnlp
+            image: masfikri/jnlp-agent:latest
+            imagePullPolicy: IfNotPresent
+          - name: vault
+            image: fathoniadi/vault-template:2.0.0
+            imagePullPolicy: IfNotPresent
+            command:
+            - cat
+            tty: true
+      '''
+        }
+    }
+
+    stages {
+        
+    stage('Clone') {
+            steps {
+                container('jnlp') {
+                    checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: params.BRANCH]],
+                    extensions: [[
+                        $class: 'RelativeTargetDirectory',
+                        relativeTargetDir: 'code']],
+                    userRemoteConfigs: [[
+                        url: "${CODE_REPO}",
+                        credentialsId: "${CREDENTIALS_CODE_REPO}",
+                    ]]
+                ])
+
+                    checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: 'refs/heads/master']],
+                    extensions: [[
+                        $class: 'RelativeTargetDirectory',
+                        relativeTargetDir: 'config']],
+                    userRemoteConfigs: [[
+                        url: "${CONFIG_REPO}",
+                        credentialsId: "${CREDENTIALS_CONFIG_REPO}",
+                    ]]
+                ])
+                }
+            }
+        }
+
+    stage('Quality Node') {
+        when {
+            expression {
+                return ( params.DEPLOY_TO == 'development2' || params.DEPLOY_TO == 'uat2'  )
+            }
+        }
+        environment {
+            scannerHome = tool "${SONARTOOL_NAME}"
+            scannerCred = credentials('sonarqube-bri-community-2')
+        }
+        steps {
+            script {
+                dir('config') {
+                withSonarQubeEnv('sonarqube-bri-community-2') {
+                    sh "${scannerHome}/bin/sonar-scanner -X"
+                    def sonarProps = readProperties  file:'sonar-project.properties'
+                    def projectKey = sonarProps['sonar.projectKey']
+                    //sh 'curl -X POST -u ${scannerCred}: ' + "'https://sonarqube-community.bri.co.id/api/permissions/add_user?login=5271022007990002&permission=user&projectKey=${projectKey}'"
+                    //sh 'curl -X POST -u ${scannerCred}: ' + "'https://sonarqube-community.bri.co.id/api/permissions/add_user?login=5271022007990002&permission=admin&projectKey=${projectKey}'"
+                }
+            }
+            }
+        }
+    }
+
+    stage('Build Image') {
+        environment {
+            IMAGE_REPO = "gcr.io/${project}/${appName}"
+        }
+        steps {
+            container('gcloud') {
+                withCredentials([file(credentialsId: "${BUILDER}" , variable: 'builder')]) {
+                    dir('code') {
+                        script {
+                            sh 'git rev-parse --short HEAD > .git/commit-id'
+                            def commit_id = readFile('.git/commit-id').trim()
+                            IMAGE_TAG = commit_id.substring(0, 7)
+                            if (proxyType != '') {
+                                sh "gcloud config set proxy/type ${proxyType}"
+                                sh "gcloud config set proxy/address ${proxyAddress}"
+                                sh "gcloud config set proxy/port ${proxyPort}"
+                            }
+                            writeFile file: 'key.json', text: readFile(builder)
+                            sh 'gcloud auth activate-service-account --key-file=key.json'
+                            sh "gcloud builds submit --project ${project} --tag ${IMAGE_REPO}:${IMAGE_TAG} ."
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    stage("Render Configuration") {
+      environment {
+        IMAGE_REPO = "gcr.io/${project}/${appName}"
+      }  
+      steps {
+        container("vault") {
+          withCredentials([ usernamePassword(credentialsId: "${VAULT_CREDENTIAL}" , usernameVariable: "vault_username", passwordVariable: "vault_password")]) {
+            dir('config') {
+               script { 
+                    for (vault_template in params.VAULT_TEMPLATES.split('\n'))
+                    {
+                        def vault_template_name  = vault_template.replace('.template','').split('/')[vault_template.replace('.template','').split('/').length - 1]
+                        
+                        sh """
+                             echo "${vault_template_name}"
+                             vault-template -t ${vault_template} -o ../code/.env -h ${VAULT_HOST} -U ${vault_username} -W "${vault_password}" -p "project=bribrain,service=${appName},environment=${params.DEPLOY_TO}"
+                        """
+                        
+                        sh """
+                            echo "${vault_template_name}"
+                            vault-template -t ${vault_template} -o ../config/helm/${appName}/config/secrets/.env -h ${VAULT_HOST} -U ${vault_username} -W "${vault_password}" -p "project=bribrain,service=${appName},environment=${params.DEPLOY_TO}"
+                        """
+                        
+                        
+                    }
+               }
+                
+            }
+          }
+        }
+      }
+    }
+        
+    stage('Deploy to Dev') {
+            when {
+                expression {
+                    return ( params.DEPLOY_TO == 'development'  )
+                }
+            }
+            environment {
+                IMAGE_REPO = "gcr.io/${project}/${appName}"
+            }
+            steps {
+                container('helm') {
+                    script {
+                        for (kubeconfig_selected in params.KUBECONFIGS.split(',')) {
+                            if (kubeconfig_selected) {
+                                withCredentials([file(credentialsId: "${kubeconfig_selected}", variable: 'KUBECONFIG')]) {
+                                    dir('config') {
+                                        echo "Deploy to cluster ${kubeconfig_selected}"
+                                        sh 'mkdir -p ~/.kube/'
+                                        writeFile file: '~/.kube/config', text: readFile(KUBECONFIG)
+                                        sh """
+
+                        helm upgrade ${appName} ./helm/${appName} \
+                        --set-string image.repository=${IMAGE_REPO},image.tag=${IMAGE_TAG} \
+                        -f ./helm/values.dev.yml --debug --install --namespace ${namespace}
+                    """
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    stage('Deploy to UAT') {
+            when {
+                expression {
+                    return ( params.DEPLOY_TO == 'uat'  )
+                }
+            }
+            environment {
+                IMAGE_REPO = "gcr.io/${project}/${appName}"
+            }
+            steps {
+                container('helm') {
+                    script {
+                        echo 'Deploy begin'
+                        for (kubeconfig_selected in params.KUBECONFIGS.split(',')) {
+                            if (kubeconfig_selected) {
+                                echo "Deploy to cluster ${kubeconfig_selected}"
+                                withCredentials([file(credentialsId: "${kubeconfig_selected}", variable: 'KUBECONFIG')]) {
+                                    dir('config') {
+                                        sh 'mkdir -p ~/.kube/'
+                                        writeFile file: '~/.kube/config', text: readFile(KUBECONFIG)
+                                        sh """
+
+                        helm upgrade ${appName} ./helm/${appName} \
+                        --set-string image.repository=${IMAGE_REPO},image.tag=${IMAGE_TAG} \
+                        -f ./helm/values.uat.yml --debug --install --namespace ${namespace}
+                    """
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    stage('Deploy to Prod') {
+           when {
+                expression {
+                    return ( params.DEPLOY_TO == 'production'  )
+                }
+            }
+            environment {
+                IMAGE_REPO = "gcr.io/${project}/${appName}"
+            }
+            steps {
+                container('helm') {
+                    script {
+                        for (kubeconfig_selected in params.KUBECONFIGS.split(',')) {
+                            if (kubeconfig_selected) {
+                                withCredentials([file(credentialsId: "${kubeconfig_selected}", variable: 'KUBECONFIG')]) {
+                                    dir('config') {
+                                        echo "Deploy to cluster ${kubeconfig_selected}"
+                                        sh 'mkdir -p ~/.kube/'
+                                        writeFile file: '~/.kube/config', text: readFile(KUBECONFIG)
+                                        sh """
+
+                        helm  upgrade --force ${appName} ./helm/${appName} \
+                        --set-string image.repository=${IMAGE_REPO},image.tag=${IMAGE_TAG} \
+                        -f ./helm/values.prd.yml --debug --install --namespace ${namespace}
+                    """
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    stage('SAST') {
+            when {
+                expression {
+                    return ( params.DEPLOY_TO == 'development'  )
+                }
+            }
+            steps {
+                script {
+                    step([$class: 'CxScanBuilder', comment: '', credentialsId: '', excludeFolders: 'helm, vendor, .scannerwork', exclusionsSetting: 'job', failBuildOnNewResults: false, failBuildOnNewSeverity: 'HIGH', filterPattern: '!.* ', fullScanCycle: 10, generatePdfReport: true, groupId: '2d95991a-f4d4-43f6-8cb8-4029b9ab4410', incremental: true, password: '{AQAAABAAAAAQ6aiwQviXnYu3oM9JZHpd8ZG+N1gQtlTUD76ogPfFv00=}', preset: '100065', projectName: "$appName", sastEnabled: true, serverUrl: 'https://sast.bri.co.id', sourceEncoding: '1', username: '', vulnerabilityThresholdResult: 'FAILURE', waitForResultsEnabled: false])
+                }
+            }
+        }
+
+    }
+}

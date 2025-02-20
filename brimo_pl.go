@@ -31,21 +31,72 @@ func BrimoData(c *gin.Context) {
 		tx.Context.SetTag("acct_no", BrimomDataRequestBody.AcctNo)
 
 		//Call Data Response From Controller
+		// Rubah logic nya
 		message, err := GetBrimoDataPhoenixDB(BrimomDataRequestBody)
-		if len(message) == 0 {
+		if len(message) == 0 && err == nil {
+			fmt.Println("message", message)
+			fmt.Println("err : ", err)
 			tx.Context.SetTag("desc", utils.MSG_ERROR_NO_DATA)
 			tx.Result = "false"
-			c.JSON(http.StatusOK, gin.H{"error": utils.MSG_ERROR_NO_DATA + "for : " + accnum})
-			fmt.Println("DATA NOT FOUND with ACCTNO ", accnum)
+			c.JSON(http.StatusOK, gin.H{"error": utils.MSG_ERROR_NO_DATA, "resp_code": "400"})
+			// fmt.Println("DATA NOT FOUND with ACCTNO ", accnum)
 			log.Println("DATA NOT FOUND with ACCTNO ", accnum)
 		} else if err == nil {
+			// c.JSON(http.StatusBadRequest, gin.H{"error": err, "resp_code": "400"})
 			tx.Context.SetTag("desc", utils.MSG_SUCCESS_DATA_FOUND)
 			tx.Result = "true"
 			GenerateResponse(c, message[0], "200", utils.MSG_SUCCESS_DATA_FOUND)
+			log.Println("DATA FOUND with ACCTNO ", accnum)
 		} else {
 			tx.Context.SetTag("desc", err.Error())
 			tx.Result = "false"
-			c.JSON(http.StatusBadRequest, gin.H{"error": err})
+			fmt.Println("error: ", err)
+			c.JSON(http.StatusOK, gin.H{"error": err.Error(), "resp_code": "500"})
+		}
+	}
+}
+
+func BrimoDataByCifno(c *gin.Context) {
+	//Call Models Data Request
+	var BrimomDataRequestBody BrimoPaylaterDataByCifnoRequest
+
+	tx := apm.DefaultTracer.StartTransaction("Get Brimo Paylater Whitelist by CIFNO No", "request")
+	defer tx.End()
+
+	//Read Acctno Request
+	cifno := c.Param("cifno")
+
+	//Append Acctno Request To Models
+	BrimomDataRequestBody.Cifno = cifno
+	if BrimomDataRequestBody.Cifno == "" {
+		tx.Context.SetTag("desc", utils.MSG_ERROR_PARSING)
+		tx.Result = "false"
+		c.JSON(http.StatusOK, gin.H{"desc": utils.MSG_ERROR_PARSING})
+	} else {
+		tx.Context.SetTag("acct_no", BrimomDataRequestBody.Cifno)
+
+		//Call Data Response From Controller
+		// Rubah logic nya
+		message, err := GetBrimoDataCifno(BrimomDataRequestBody)
+		if len(message) == 0 && err == nil {
+			fmt.Println("message", message)
+			fmt.Println("err : ", err)
+			tx.Context.SetTag("desc", utils.MSG_ERROR_NO_DATA)
+			tx.Result = "false"
+			c.JSON(http.StatusOK, gin.H{"error": utils.MSG_ERROR_NO_DATA, "resp_code": "400"})
+			// fmt.Println("DATA NOT FOUND with ACCTNO ", accnum)
+			log.Println("DATA NOT FOUND with ACCTNO ", cifno)
+		} else if err == nil {
+			// c.JSON(http.StatusBadRequest, gin.H{"error": err, "resp_code": "400"})
+			tx.Context.SetTag("desc", utils.MSG_SUCCESS_DATA_FOUND)
+			tx.Result = "true"
+			GenerateCifnoResponse(c, message[0], "200", utils.MSG_SUCCESS_DATA_FOUND)
+			log.Println("DATA FOUND with ACCTNO ", cifno)
+		} else {
+			tx.Context.SetTag("desc", err.Error())
+			tx.Result = "false"
+			fmt.Println("error: ", err)
+			c.JSON(http.StatusOK, gin.H{"error": err.Error(), "resp_code": "500"})
 		}
 	}
 }
