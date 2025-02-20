@@ -7,7 +7,6 @@ pipeline {
   agent any
 
   stages {
-
     stage('Checkout Source') {
       steps {
         script {
@@ -24,6 +23,7 @@ pipeline {
           }
       }
     }
+    
     stage('Build Image') {
       steps {
         script {
