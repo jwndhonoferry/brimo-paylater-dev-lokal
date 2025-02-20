@@ -1,7 +1,7 @@
 pipeline {
 
   environment {
-    dockerimagename = "ferryjwndhono/brimo-paylater-dev-lokal:1.0"
+    dockerimagename = "ferryjwndhono/brimo-paylater-dev-lokal:2.0"
   }
 
   agent any
