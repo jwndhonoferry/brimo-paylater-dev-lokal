@@ -1,7 +1,7 @@
 pipeline {
 
   environment {
-    dockerimagename = "ferryjwndhono/brimo-paylater-dev-lokal"
+    dockerimagename = "ferryjwndhono/brimo-paylater-dev-lokal:1.0"
     dockerImage = ""
   }
 
@@ -25,7 +25,7 @@ pipeline {
 
     stage('Pushing Image') {
       environment {
-               registryCredential = 'dockerhub-ferry'
+               registryCredential = 'docker-ferry'
            }
       steps{
         script {
