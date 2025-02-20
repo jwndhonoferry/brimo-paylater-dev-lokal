@@ -28,6 +28,9 @@ pass : 6b86a58270e542b0b2cc4174fb95cf0f
 docker pull jenkins/jenkins:latest
 docker run -p 8080:8080 -p 50000:50000 -v /home/jenkins jenkins/jenkins
 
+docker run -d -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock --name jenkins jenkins/jenkins:latest
+
+
 
 # ELASTIC & KIBANA
 user : elastic
